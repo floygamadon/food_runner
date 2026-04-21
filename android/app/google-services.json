@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "228566530405",
+    "project_id": "food-runner-26a14",
+    "storage_bucket": "food-runner-26a14.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:228566530405:android:d84ab1bcf6f8e4368d098c",
+        "android_client_info": {
+          "package_name": "com.example.food_runner"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0glHZHuBg4xiklmGF2wdAcD75zF-N1pY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
