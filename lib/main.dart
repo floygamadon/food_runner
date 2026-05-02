@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import 'firebase_options.dart';
+import 'screens/router_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,13 +18,13 @@ class FoodRunnerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       title: 'Food Runner',
-      home: const Scaffold(
-        body: Center(
-          child: Text('Food Runner is connected to Firebase'),
-        ),
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorSchemeSeed: Colors.deepOrange,
+        useMaterial3: true,
       ),
+      home: const RouterScreen(),
     );
   }
 }
