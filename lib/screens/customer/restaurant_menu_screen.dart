@@ -38,35 +38,65 @@ class _RestaurantMenuScreenState extends State<RestaurantMenuScreen> {
     });
   }
 
-  Future<void> _quickOrder({
-    required BuildContext context,
-    required MenuItemModel item,
-  }) async {
+  Future<void> _checkout() async {
     final user = AuthService().currentUser;
 
     if (user == null) return;
 
-    final quantity = _quantities[item.id] ?? 0;
+    final selectedItems = _quantities.entries
+        .where((entry) => entry.value > 0)
+        .toList();
 
-    if (quantity == 0) {
+    if (selectedItems.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add at least 1 item')),
+        const SnackBar(content: Text('Please select at least one item')),
       );
       return;
     }
 
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Confirm Order'),
+          content: const Text('Do you want to place this order?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Confirm'),
+            ),
+          ],
+        );
+      },
+    );
+    
+    if (confirm != true) return;
+
+    final restaurantService = RestaurantService();
+    final items = await restaurantService
+        .streamMenuItems(widget.restaurant.id)
+        .first;
+
+    final cartItems = selectedItems.map((entry) {
+      final item = items.firstWhere((i) => i.id == entry.key);
+
+      return CartItem(
+        menuItem: item,
+        quantity: entry.value,
+      );
+    }).toList();
+
     final orderId = await OrderService().placeOrder(
       customerId: user.uid,
       restaurantId: widget.restaurant.id,
-      cartItems: [
-        CartItem(
-          menuItem: item,
-          quantity: quantity,
-        ),
-      ],
+      cartItems: cartItems,
     );
 
-    if (context.mounted) {
+    if (mounted) {
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -84,6 +114,15 @@ class _RestaurantMenuScreenState extends State<RestaurantMenuScreen> {
       appBar: AppBar(
         title: Text(widget.restaurant.name),
       ),
+
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: Colors.red,
+        onPressed: _checkout,
+        icon: const Icon(Icons.shopping_cart),
+        label: const Text('Checkout'),
+      ),
+
       body: StreamBuilder<List<MenuItemModel>>(
         stream: restaurantService.streamMenuItems(widget.restaurant.id),
         builder: (context, snapshot) {
@@ -152,15 +191,7 @@ class _RestaurantMenuScreenState extends State<RestaurantMenuScreen> {
                               ),
                             ],
                           ),
-                          TextButton(
-                            onPressed: () {
-                              _quickOrder(
-                                context: context,
-                                item: item,
-                              );
-                            },
-                            child: const Text('Order'),
-                          ),
+                          
                         ],
                       ),
                     ],
