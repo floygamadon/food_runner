@@ -3,6 +3,7 @@ class OrderModel {
   final String customerId;
   final String restaurantId;
   final String status;
+  final String driverId;
   final double total;
   final List<dynamic> items;
   final DateTime? createdAt;
@@ -12,6 +13,7 @@ class OrderModel {
     required this.customerId,
     required this.restaurantId,
     required this.status,
+    required this.driverId,
     required this.total,
     required this.items,
     required this.createdAt,
@@ -23,6 +25,7 @@ class OrderModel {
       customerId: data['customerId'] ?? '',
       restaurantId: data['restaurantId'] ?? '',
       status: data['status'] ?? 'placed',
+      driverId: data['driverId'] ?? '',
       total: (data['total'] ?? 0).toDouble(),
       items: data['items'] ?? [],
       createdAt: data['createdAt']?.toDate(),
