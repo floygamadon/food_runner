@@ -11,7 +11,7 @@ class RestaurantOrdersScreen extends StatelessWidget {
     final authService = AuthService();
     final orderService = OrderService();
 
-    final restaurantId = authService.currentUser?.uid ?? '';
+    final restaurantId =  'DHZtpy71DgRZBVIJwMWGmQOCmrq2';
 
     return Scaffold(
       appBar: AppBar(
