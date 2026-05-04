@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/order_model.dart';
-import '../../services/auth_service.dart';
+// import '../../services/auth_service.dart';
 import '../../services/order_service.dart';
 
 class RestaurantOrdersScreen extends StatelessWidget {
@@ -8,7 +8,7 @@ class RestaurantOrdersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authService = AuthService();
+    // final authService = AuthService();
     final orderService = OrderService();
 
     final restaurantId =  'DHZtpy71DgRZBVIJwMWGmQOCmrq2';
