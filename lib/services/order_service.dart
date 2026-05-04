@@ -28,6 +28,7 @@ class OrderService {
       'items': cartItems.map((item) => item.toMap()).toList(),
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
+      'reviewed': false,
     });
 
     return docRef.id;
@@ -64,6 +65,20 @@ class OrderService {
       }).toList();
     });
   }
+  
+  Stream<List<OrderModel>> streamCompletedCustomerOrders(String customerId) {
+  return _db
+      .collection('orders')
+      .where('customerId', isEqualTo: customerId)
+      .where('status', isEqualTo: 'delivered')
+      .orderBy('createdAt', descending: true)
+      .snapshots()
+      .map((snapshot) {
+    return snapshot.docs.map((doc) {
+      return OrderModel.fromMap(doc.id, doc.data());
+    }).toList();
+  });
+}
 
   Future<void> updateOrderStatus({
     required String orderId,
