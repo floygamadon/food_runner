@@ -3,6 +3,7 @@ import '../../models/restaurant.dart';
 import '../../services/auth_service.dart';
 import '../../services/restaurant_service.dart';
 import 'restaurant_menu_screen.dart';
+import 'order_history_screen.dart';
 
 class CustomerHomeScreen extends StatelessWidget {
   const CustomerHomeScreen({super.key});
@@ -12,16 +13,29 @@ class CustomerHomeScreen extends StatelessWidget {
     final restaurantService = RestaurantService();
     final authService = AuthService();
 
-    return Scaffold(
+    return Scaffold(    
       appBar: AppBar(
         title: const Text('Customer Home'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const OrderHistoryScreen(),
+                ),
+              );
+            },
+          ),
+          
           IconButton(
             onPressed: authService.logout,
             icon: const Icon(Icons.logout),
           ),
         ],
       ),
+
       body: StreamBuilder<List<Restaurant>>(
         stream: restaurantService.streamRestaurants(),
         builder: (context, snapshot) {

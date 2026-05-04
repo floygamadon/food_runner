@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import 'menu_management_screen.dart';
 import 'restaurant_orders_screen.dart';
+import 'restaurant_reviews_screen.dart'; 
 
 class RestaurantDashboardScreen extends StatelessWidget {
   const RestaurantDashboardScreen({super.key});
@@ -37,6 +38,19 @@ class RestaurantDashboardScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
+          ElevatedButton.icon(
+            icon: const Icon(Icons.reviews),
+            label: const Text('View Reviews'),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const RestaurantReviewsScreen(),
+                ),
+              );
+            },
+          ),
+          
           ElevatedButton.icon(
             icon: const Icon(Icons.receipt_long),
             label: const Text('View Incoming Orders'),
