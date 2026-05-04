@@ -7,6 +7,7 @@ class OrderModel {
   final double total;
   final List<dynamic> items;
   final DateTime? createdAt;
+  final bool reviewed;
 
   OrderModel({
     required this.id,
@@ -17,6 +18,7 @@ class OrderModel {
     required this.total,
     required this.items,
     required this.createdAt,
+    required this.reviewed,
   });
 
   factory OrderModel.fromMap(String id, Map<String, dynamic> data) {
@@ -29,6 +31,7 @@ class OrderModel {
       total: (data['total'] ?? 0).toDouble(),
       items: data['items'] ?? [],
       createdAt: data['createdAt']?.toDate(),
+      reviewed: data['reviewed'] ?? false,
     );
   }
 }
