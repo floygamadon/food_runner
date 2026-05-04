@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import '../../models/cart_item.dart';
 import '../../models/menu_item.dart';
 import '../../models/restaurant.dart';
-import '../../services/auth_service.dart';
-import '../../services/order_service.dart';
 import '../../services/restaurant_service.dart';
-import 'order_tracking_screen.dart';
+import 'checkout_screen.dart';
 
 class RestaurantMenuScreen extends StatefulWidget {
   final Restaurant restaurant;
@@ -39,10 +37,6 @@ class _RestaurantMenuScreenState extends State<RestaurantMenuScreen> {
   }
 
   Future<void> _checkout() async {
-    final user = AuthService().currentUser;
-
-    if (user == null) return;
-
     final selectedItems = _quantities.entries
         .where((entry) => entry.value > 0)
         .toList();
@@ -54,56 +48,28 @@ class _RestaurantMenuScreenState extends State<RestaurantMenuScreen> {
       return;
     }
 
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Confirm Order'),
-          content: const Text('Do you want to place this order?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Confirm'),
-            ),
-          ],
-        );
-      },
-    );
-    
-    if (confirm != true) return;
-
     final restaurantService = RestaurantService();
-    final items = await restaurantService
-        .streamMenuItems(widget.restaurant.id)
-        .first;
 
-    final cartItems = selectedItems.map((entry) {
-      final item = items.firstWhere((i) => i.id == entry.key);
+    restaurantService.streamMenuItems(widget.restaurant.id).first.then((items) {
+      final cartItems = selectedItems.map((entry) {
+        final item = items.firstWhere((i) => i.id == entry.key);
 
-      return CartItem(
-        menuItem: item,
-        quantity: entry.value,
-      );
-    }).toList();
-
-    final orderId = await OrderService().placeOrder(
-      customerId: user.uid,
-      restaurantId: widget.restaurant.id,
-      cartItems: cartItems,
-    );
-
-    if (mounted) {
+        return CartItem(
+          menuItem: item,
+          quantity: entry.value,
+        );
+      }).toList();
+      
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => OrderTrackingScreen(orderId: orderId),
+          builder: (_) => CheckoutScreen(
+            restaurantId: widget.restaurant.id,
+            cartItems: cartItems,
+          ),
         ),
       );
-    }
+    });
   }
 
   @override
