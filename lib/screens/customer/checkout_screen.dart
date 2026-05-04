@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../models/cart_item.dart';
 import '../../services/auth_service.dart';
 import '../../services/order_service.dart';
@@ -34,17 +35,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   String selectedState = 'GA';
 
   final List<String> states = const [
-    'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA',
-    'HI','ID','IL','IN','IA','KS','KY','LA','ME','MD',
-    'MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ',
-    'NM','NY','NC','ND','OH','OK','OR','PA','RI','SC',
-    'SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'
+    'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+    'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+    'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+    'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+    'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY',
   ];
 
-  double get total => widget.cartItems.fold(
+  double get subtotal => widget.cartItems.fold(
         0,
         (sum, item) => sum + item.subtotal,
       );
+
+  double get tax => subtotal * 0.06;
+
+  double get grandTotal => subtotal + tax;
 
   Future<void> _placeOrder() async {
     if (!_formKey.currentState!.validate()) return;
@@ -53,7 +58,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Confirm Order'),
-        content: Text('Total: \$${total.toStringAsFixed(2)}'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Subtotal: \$${subtotal.toStringAsFixed(2)}'),
+            Text('Tax (6%): \$${tax.toStringAsFixed(2)}'),
+            const Divider(),
+            Text(
+              'Total: \$${grandTotal.toStringAsFixed(2)}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -88,10 +105,42 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
   }
 
+  Widget _summaryRow(String label, double amount, {bool bold = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: bold ? const TextStyle(fontWeight: FontWeight.bold) : null,
+        ),
+        Text(
+          '\$${amount.toStringAsFixed(2)}',
+          style: bold ? const TextStyle(fontWeight: FontWeight.bold) : null,
+        ),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    streetController.dispose();
+    cityController.dispose();
+    zipController.dispose();
+    cardNumberController.dispose();
+    nameOnCardController.dispose();
+    expMonthController.dispose();
+    expYearController.dispose();
+    bankNameController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Checkout')),
+      appBar: AppBar(
+        title: const Text('Checkout'),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -101,59 +150,69 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               TextFormField(
                 controller: nameController,
                 decoration: const InputDecoration(labelText: 'Customer Name'),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
+                validator: (value) => value!.isEmpty ? 'Required' : null,
               ),
               TextFormField(
                 controller: streetController,
-                decoration: const InputDecoration(labelText: 'Street'),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
+                decoration: const InputDecoration(labelText: 'Street Name'),
+                validator: (value) => value!.isEmpty ? 'Required' : null,
               ),
               TextFormField(
                 controller: cityController,
                 decoration: const InputDecoration(labelText: 'City'),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
+                validator: (value) => value!.isEmpty ? 'Required' : null,
               ),
               TextFormField(
                 controller: zipController,
                 decoration: const InputDecoration(labelText: 'Zip Code'),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
+                keyboardType: TextInputType.number,
+                validator: (value) => value!.isEmpty ? 'Required' : null,
               ),
               DropdownButtonFormField<String>(
                 value: selectedState,
                 decoration: const InputDecoration(labelText: 'State'),
-                items: states.map((s) {
-                  return DropdownMenuItem(value: s, child: Text(s));
+                items: states.map((state) {
+                  return DropdownMenuItem(
+                    value: state,
+                    child: Text(state),
+                  );
                 }).toList(),
-                onChanged: (v) => setState(() => selectedState = v!),
+                onChanged: (value) {
+                  setState(() {
+                    selectedState = value!;
+                  });
+                },
               ),
               const SizedBox(height: 20),
 
-              /// Payment
               TextFormField(
                 controller: cardNumberController,
-                decoration: const InputDecoration(labelText: 'Card Number'),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
+                decoration: const InputDecoration(labelText: 'Credit Card Number'),
+                keyboardType: TextInputType.number,
+                validator: (value) => value!.isEmpty ? 'Required' : null,
               ),
               TextFormField(
                 controller: nameOnCardController,
                 decoration: const InputDecoration(labelText: 'Name on Card'),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
+                validator: (value) => value!.isEmpty ? 'Required' : null,
               ),
               Row(
                 children: [
                   Expanded(
                     child: TextFormField(
                       controller: expMonthController,
-                      decoration: const InputDecoration(labelText: 'MM'),
-                      validator: (v) => v!.isEmpty ? 'Required' : null,
+                      decoration: const InputDecoration(labelText: 'Expiration Month'),
+                      keyboardType: TextInputType.number,
+                      validator: (value) => value!.isEmpty ? 'Required' : null,
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: TextFormField(
                       controller: expYearController,
-                      decoration: const InputDecoration(labelText: 'YY'),
-                      validator: (v) => v!.isEmpty ? 'Required' : null,
+                      decoration: const InputDecoration(labelText: 'Expiration Year'),
+                      keyboardType: TextInputType.number,
+                      validator: (value) => value!.isEmpty ? 'Required' : null,
                     ),
                   ),
                 ],
@@ -161,7 +220,31 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               TextFormField(
                 controller: bankNameController,
                 decoration: const InputDecoration(labelText: 'Bank Name'),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
+                validator: (value) => value!.isEmpty ? 'Required' : null,
+              ),
+
+              const SizedBox(height: 24),
+
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Order Summary',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    _summaryRow('Subtotal', subtotal),
+                    _summaryRow('Tax (6%)', tax),
+                    const Divider(),
+                    _summaryRow('Grand Total', grandTotal, bold: true),
+                  ],
+                ),
               ),
 
               const SizedBox(height: 30),
@@ -172,7 +255,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   minimumSize: const Size.fromHeight(50),
                 ),
                 onPressed: _placeOrder,
-                child: Text('Place Order (\$${total.toStringAsFixed(2)})'),
+                child: Text(
+                  'Place Order (\$${grandTotal.toStringAsFixed(2)})',
+                ),
               ),
             ],
           ),
